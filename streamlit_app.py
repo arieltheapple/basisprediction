@@ -10,7 +10,7 @@ st.title("🌽Basis Prediction🏡")
 @st.cache
 def load_data():
     # Replace 'your_data.csv' with the path to your dataset
-    data = pd.read_csv("your_data.csv")  # Ensure the dataset is in the same folder or provide the full path
+    data = pd.read_csv("rf_data.csv")  # Ensure the dataset is in the same folder or provide the full path
     return data
 
 # Load the dataset
