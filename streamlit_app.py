@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import LabelEncoder
 
 # Title of the app
-st.title("🌽Basis Prediction"🏡)
+st.title("🌽Basis Prediction🏡")
 
 # Step 1: Load the Dataset (Preloaded by Developer)
 @st.cache
