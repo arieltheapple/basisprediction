@@ -45,6 +45,13 @@ data = pd.get_dummies(data, columns=["Board_Month"], drop_first=True)
 # Update independent_vars to reflect the transformed column names
 independent_vars = [col for col in data.columns if col in original_independent_vars or col.startswith("Board_Month")]
 
+# Get one-hot encoded Board_Month columns
+board_month_columns = data.filter(like="Board_Month").columns.tolist()
+
+# Extract month names for dropdown (e.g., "Jul", "Sep")
+month_names = [col.replace("Board_Month_", "") for col in board_month_columns]
+month_names.insert(0, "Dec")  # Add "Dec" as an option
+
 # Split data into predictors and target
 X = data[independent_vars]
 y = data[dependent_var]
@@ -70,11 +77,18 @@ user_input = {}
 for feature in original_independent_vars:
     label = corresponding_words.get(feature, feature)  # Get the corresponding word for the feature
     if feature == "Board_Month":
-        # Dropdown for categorical variables (Board_Month)
-        value = st.selectbox(f"{label}:", options=data.filter(like="Board_Month").columns.tolist())
-        # Set all Board_Month columns to 0 and set the selected one to 1
-        for col in data.filter(like="Board_Month").columns:
-            user_input[col] = 1 if col == value else 0
+        # Dropdown for Board_Month
+        selected_month = st.selectbox(f"{label}:", options=month_names)
+
+        # Initialize Board_Month columns to 0
+        for col in board_month_columns:
+            user_input[col] = 0
+
+        # If "Dec" is selected, leave all Board_Month columns as 0
+        if selected_month != "Dec":
+            # Set the corresponding one-hot column to 1
+            one_hot_col = f"Board_Month_{selected_month}"
+            user_input[one_hot_col] = 1
     else:
         # Number input for numerical variables
         value = st.number_input(f"{label}:", value=0.0)
@@ -86,3 +100,4 @@ if st.button("Predict"):
     input_df = pd.DataFrame([user_input])
     prediction = best_rf_model.predict(input_df)
     st.success(f"The predicted value for {dependent_var} is: {prediction[0]:.2f}")
+
