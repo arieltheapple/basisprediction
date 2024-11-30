@@ -36,12 +36,11 @@ y = data[dependent_var]
 
 # Step 2: Train the Random Forest Model with Best Hyperparameters
 best_model = RandomForestRegressor(
-    n_estimators=150,         # Best number of trees
-    max_depth=None,           # Best max depth (None means no limit)
-    min_samples_split=10,     # Best min samples to split a node
-    min_samples_leaf=1,       # Best min samples required at a leaf node
-    random_state=42,          # Seed for reproducibility
-    n_jobs=-1                 # Use all available cores
+    n_estimators=500,         # Best number of trees
+    max_features=7,         # Number of features considered for splitting
+    random_state=42,           # For reproducibility
+    n_jobs=-1,                 # Use all cores for computation
+    importance=True   
 )
 
 # Fit the model
