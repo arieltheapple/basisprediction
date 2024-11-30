@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import mean_squared_error, r2_score
 
 # Title of the app
 st.title("🌽Basis Prediction🏡")
@@ -9,7 +9,7 @@ st.title("🌽Basis Prediction🏡")
 # Step 1: Load the Dataset (Preloaded by Developer)
 @st.cache
 def load_data():
-    # Replace 'your_data.csv' with the path to your dataset
+    # Replace 'rf_data.csv' with the path to your dataset
     data = pd.read_csv("rf_data.csv")  # Ensure the dataset is in the same folder or provide the full path
     return data
 
@@ -40,25 +40,26 @@ corresponding_words = {
     "Lag_Monthly_Wyne_Avg_B": "Last Month's Average WYNE Basis"
 }
 
-# Encode categorical variables (e.g., "Board_Month")
-categorical_vars = ["Board_Month"]
-label_encoder = LabelEncoder()
-data["Board_Month"] = label_encoder.fit_transform(data["Board_Month"])
+# Step 2: Handle categorical variables using one-hot encoding
+if not all(data[independent_vars].dtypes.apply(pd.api.types.is_numeric_dtype)):
+    data = pd.get_dummies(data, columns=["Board_Month"], drop_first=True)
 
-# Prepare data for training
+# Split data into predictors and target
 X = data[independent_vars]
 y = data[dependent_var]
 
-# Step 2: Train the Random Forest Model with Best Hyperparameters
-best_model = RandomForestRegressor(
-    n_estimators=500,         # Best number of trees
-    max_features=7,         # Number of features considered for splitting
-    random_state=42,           # For reproducibility
-    n_jobs=-1                 # Use all cores for computation
+# Train Random Forest model with new hyperparameters
+best_rf_model = RandomForestRegressor(
+    n_estimators=100,         # Best number of trees
+    min_samples_split=2,      # Minimum samples required to split an internal node
+    min_samples_leaf=1,       # Minimum samples required at a leaf node
+    max_features='log2',      # Number of features considered for splitting
+    max_depth=30,             # Maximum depth of the tree
+    random_state=123          # For reproducibility
 )
 
 # Fit the model
-best_model.fit(X, y)
+best_rf_model.fit(X, y)
 
 # Step 3: Input Fields for Prediction
 st.write("### Enter Feature Values for Prediction")
@@ -66,11 +67,13 @@ user_input = {}
 
 # Collect user inputs for independent variables
 for feature in independent_vars:
-    label = corresponding_words[feature]  # Get the corresponding word for the feature
-    if feature in categorical_vars:
-        # Dropdown for categorical variables
-        value = st.selectbox(f"{label}:", options=label_encoder.classes_)
-        user_input[feature] = label_encoder.transform([value])[0]
+    label = corresponding_words.get(feature, feature)  # Get the corresponding word for the feature
+    if feature == "Board_Month":
+        # Dropdown for categorical variables (Board_Month)
+        value = st.selectbox(f"{label}:", options=data.filter(like="Board_Month").columns.tolist())
+        # Set all Board_Month columns to 0 and set the selected one to 1
+        for col in data.filter(like="Board_Month").columns:
+            user_input[col] = 1 if col == value else 0
     else:
         # Number input for numerical variables
         value = st.number_input(f"{label}:", value=0.0)
@@ -80,5 +83,5 @@ for feature in independent_vars:
 if st.button("Predict"):
     # Convert user input to DataFrame
     input_df = pd.DataFrame([user_input])
-    prediction = best_model.predict(input_df)
+    prediction = best_rf_model.predict(input_df)
     st.success(f"The predicted value for {dependent_var} is: {prediction[0]:.2f}")
