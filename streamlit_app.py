@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error, r2_score
 
 # Title of the app
 st.title("🌽Basis Prediction🏡")
@@ -17,7 +16,7 @@ def load_data():
 data = load_data()
 
 # Predefined independent and dependent variables
-independent_vars = [
+original_independent_vars = [
     "Distance", "Weekly_NY_Upstate_Gasoline_Price", "VIX",
     "Total_Silage_P", "Volume", "Wyne_Basis", "Contract_Duration",
     "Engaging_Period", "Lag_Monthly_NY_Gasoline_Avg_P", "Board_Month",
@@ -41,8 +40,10 @@ corresponding_words = {
 }
 
 # Step 2: Handle categorical variables using one-hot encoding
-if not all(data[independent_vars].dtypes.apply(pd.api.types.is_numeric_dtype)):
-    data = pd.get_dummies(data, columns=["Board_Month"], drop_first=True)
+data = pd.get_dummies(data, columns=["Board_Month"], drop_first=True)
+
+# Update independent_vars to reflect the transformed column names
+independent_vars = [col for col in data.columns if col in original_independent_vars or col.startswith("Board_Month")]
 
 # Split data into predictors and target
 X = data[independent_vars]
@@ -66,7 +67,7 @@ st.write("### Enter Feature Values for Prediction")
 user_input = {}
 
 # Collect user inputs for independent variables
-for feature in independent_vars:
+for feature in original_independent_vars:
     label = corresponding_words.get(feature, feature)  # Get the corresponding word for the feature
     if feature == "Board_Month":
         # Dropdown for categorical variables (Board_Month)
