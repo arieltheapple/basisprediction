@@ -25,6 +25,21 @@ independent_vars = [
 ]
 dependent_var = "Basis"
 
+corresponding_words = {
+    "Distance": "Driving Distance",
+    "Weekly_NY_Upstate_Gasoline_Price": "Weekly Average NY Upstate Gasoline Price",
+    "VIX": "VIX",
+    "Total_Silage_P": "Western NY Yearly Silage Production",
+    "Volume": "Buying Volume (Bushels)",
+    "Wyne_Basis": "WYNE Basis",
+    "Contract_Duration": "Contract Duration",
+    "Engaging_Period": "Engaging Period",
+    "Lag_Monthly_NY_Gasoline_Avg_P": "Last Month's Average NY Upstate Gasoline Price",
+    "Board_Month": "Board Month",
+    "future_Price": "Future Price",
+    "Lag_Monthly_Wyne_Avg_B": "Last Month's Average WYNE Basis"
+}
+
 # Encode categorical variables (e.g., "Board_Month")
 categorical_vars = ["Board_Month"]
 label_encoder = LabelEncoder()
@@ -39,13 +54,11 @@ best_model = RandomForestRegressor(
     n_estimators=500,         # Best number of trees
     max_features=7,         # Number of features considered for splitting
     random_state=42,           # For reproducibility
-    n_jobs=-1,                 # Use all cores for computation
-    importance=True   
+    n_jobs=-1                 # Use all cores for computation
 )
 
 # Fit the model
 best_model.fit(X, y)
-#st.success("The model has been trained with the best hyperparameters!")
 
 # Step 3: Input Fields for Prediction
 st.write("### Enter Feature Values for Prediction")
@@ -53,13 +66,14 @@ user_input = {}
 
 # Collect user inputs for independent variables
 for feature in independent_vars:
+    label = corresponding_words[feature]  # Get the corresponding word for the feature
     if feature in categorical_vars:
         # Dropdown for categorical variables
-        value = st.selectbox(f"Select value for {feature}:", options=label_encoder.classes_)
+        value = st.selectbox(f"{label}:", options=label_encoder.classes_)
         user_input[feature] = label_encoder.transform([value])[0]
     else:
         # Number input for numerical variables
-        value = st.number_input(f"Enter value for {feature}:", value=0.0)
+        value = st.number_input(f"{label}:", value=0.0)
         user_input[feature] = value
 
 # Step 4: Make Prediction
