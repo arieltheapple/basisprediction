@@ -94,10 +94,18 @@ for feature in original_independent_vars:
         value = st.number_input(f"{label}:", value=0.0)
         user_input[feature] = value
 
-# Step 4: Make Prediction
+#predict 
 if st.button("Predict"):
     # Convert user input to DataFrame
     input_df = pd.DataFrame([user_input])
-    prediction = best_rf_model.predict(input_df)
-    st.success(f"The predicted value for {dependent_var} is: {prediction[0]:.2f}")
+
+    # Align input_df with training data columns
+    input_df = input_df.reindex(columns=X.columns, fill_value=0)
+
+    # Make prediction
+    try:
+        prediction = best_rf_model.predict(input_df)
+        st.success(f"The predicted value for {dependent_var} is: {prediction[0]:.2f}")
+    except ValueError as e:
+        st.error(f"An error occurred during prediction: {e}")
 
