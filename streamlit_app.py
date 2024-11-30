@@ -90,8 +90,8 @@ for feature in original_independent_vars:
             one_hot_col = f"Board_Month_{selected_month}"
             user_input[one_hot_col] = 1
     else:
-        # Number input for numerical variables
-        value = st.number_input(f"{label}:", value=0.0)
+        # Number input for numerical variables with three decimal places
+        value = st.number_input(f"{label}:", value=0.000, format="%.3f")
         user_input[feature] = value
 
 #predict 
